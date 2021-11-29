@@ -13,7 +13,6 @@ import net.ReelViews.R;
 public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
     // Widgets
-    TextView title, release_date;
     ImageView imageView;
     RatingBar ratingBar;
 
@@ -24,9 +23,6 @@ public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnC
         super(itemView);
 
         this.onMovieListener = onMovieListener;
-
-        title = itemView.findViewById(R.id.movie_title);
-        release_date = itemView.findViewById(R.id.movie_category);
 
         imageView = itemView.findViewById(R.id.movie_img);
         ratingBar = itemView.findViewById(R.id.rating_bar);

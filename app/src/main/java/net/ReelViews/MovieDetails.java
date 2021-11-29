@@ -21,6 +21,7 @@ public class MovieDetails extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTheme(R.style.Theme_ReelViews);
         setContentView(R.layout.activity_movie_details);
 
         imageViewDetails = findViewById(R.id.imageView_details);

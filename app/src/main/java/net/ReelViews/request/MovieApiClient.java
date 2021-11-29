@@ -9,6 +9,7 @@ import net.ReelViews.AppExecutors;
 import net.ReelViews.models.MovieModel;
 import net.ReelViews.response.MovieSearchResponse;
 import net.ReelViews.utils.Credentials;
+import net.ReelViews.utils.MovieApi;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,12 +22,18 @@ import retrofit2.Response;
 
 public class MovieApiClient{
 
-    // Live Data
+    // Live Data for search
     private MutableLiveData<List<MovieModel>> mMovies;
     private static MovieApiClient instance;
 
     // Global request
     private RetrieveMoviesRunnable retrieveMoviesRunnable;
+
+    // LIVE DATA FOR POPULAR MOVIES
+    private MutableLiveData<List<MovieModel>> mMoviesPop;
+
+    // MAKING POPULAR RUNNABLE
+    private RetrieveMoviesRunnablePop retrieveMoviesRunnablePop;
 
     public static MovieApiClient getInstance(){
         if (instance == null){
@@ -37,10 +44,15 @@ public class MovieApiClient{
 
     private MovieApiClient(){
         mMovies = new MutableLiveData<>();
+        mMoviesPop = new MutableLiveData<>();
     }
 
-    public LiveData<List<MovieModel>> getMovies() {
-        return mMovies;
+
+
+    public LiveData<List<MovieModel>> getMovies() { return mMovies;
+    }
+
+    public LiveData<List<MovieModel>> getMoviesPop() { return mMoviesPop;
     }
 
     // 1 - Call Method through Classes
@@ -62,8 +74,26 @@ public class MovieApiClient{
         }, 3000, TimeUnit.MILLISECONDS);
     }
 
+    public void searchMoviesPop(int pageNumber) {
+        if (retrieveMoviesRunnablePop != null){
+            retrieveMoviesRunnablePop = null;
+        }
+
+        retrieveMoviesRunnablePop = new RetrieveMoviesRunnablePop(pageNumber);
+
+        final Future myHandler2 = AppExecutors.getInstance().networkIO().submit(retrieveMoviesRunnablePop);
+
+        AppExecutors.getInstance().networkIO().schedule(new Runnable() {
+            @Override
+            public void run() {
+                // Cancelling retrofit call
+                myHandler2.cancel(true);
+            }
+        }, 1000, TimeUnit.MILLISECONDS);
+    }
+
         // Retrieve RestAPI by ID and Search Query
-        private class RetrieveMoviesRunnable implements Runnable{
+    private class RetrieveMoviesRunnable implements Runnable{
 
            private String query;
            private int pageNumber;
@@ -120,4 +150,61 @@ public class MovieApiClient{
             }
 
         }
+
+    private class RetrieveMoviesRunnablePop implements Runnable{
+
+
+        private int pageNumber;
+        boolean cancelRequest;
+
+        public RetrieveMoviesRunnablePop(int pageNumber) {
+            this.pageNumber = pageNumber;
+            cancelRequest = false;
+        }
+
+        @Override
+        public void run() {
+
+            try {
+                Response response2 = getPop(pageNumber).execute();
+
+                if (cancelRequest){
+                    return;
+                }
+                if(response2.code() == 200){
+                    List<MovieModel> list = new ArrayList<>(((MovieSearchResponse)response2.body()).getMovies());
+                    if (pageNumber == 1){
+                        mMoviesPop.postValue(list);
+                    }else{
+                        List<MovieModel> currentMovies = mMoviesPop.getValue();
+                        currentMovies.addAll(list);
+                        mMoviesPop.postValue(currentMovies);
+                    }
+                }else{
+                    String error = response2.errorBody().string();
+                    Log.v("Tag", "Error " +error);
+                    mMoviesPop.postValue(null);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                mMoviesPop.postValue(null);
+            }
+
+        }
+
+        //Search Query
+        private Call<MovieSearchResponse> getPop(int pageNumber){
+            return Servicey.getMovieApi().getPopular(
+                    Credentials.API_KEY,
+                    pageNumber
+            );
+        }
+
+        private void cancelRequest(){
+            Log.v("Tag","Cancelling Search Request");
+            cancelRequest = true;
+        }
+
+    }
+
 }

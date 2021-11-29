@@ -1,6 +1,7 @@
 package net.ReelViews;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -43,13 +45,24 @@ public class MovieListActivity extends AppCompatActivity implements OnMovieListe
     // ViewModel
     private MovieListViewModel movieListViewModel;
 
+    boolean isPopular = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        setTheme(R.style.Theme_ReelViews);
+
         setContentView(R.layout.activity_main);
 
+
         // Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.tittle);
         setSupportActionBar(toolbar);
 
         // SearchView
@@ -61,6 +74,26 @@ public class MovieListActivity extends AppCompatActivity implements OnMovieListe
 
         ConfigureRecyclerView();
         ObserveAnyChange();
+        ObservePopularMovies();
+
+        // GETTING POPULAR MOVIES
+        movieListViewModel.searchMoviePop(1);
+
+    }
+
+    private void ObservePopularMovies() {
+        movieListViewModel.getPop().observe(this, new Observer<List<MovieModel>>() {
+            @Override
+            public void onChanged(List<MovieModel> movieModels) {
+                // Observing for any data change
+                if (movieModels != null){
+                    for (MovieModel movieModel: movieModels){
+                        Log.v("Tag", "onChanged: " +movieModel.getTitle());
+                        movieRecyclerAdapter.setmMovies(movieModels);
+                    }
+                }
+            }
+        });
 
     }
 
@@ -86,7 +119,7 @@ public class MovieListActivity extends AppCompatActivity implements OnMovieListe
         movieRecyclerAdapter = new MovieRecyclerView(this);
 
         recyclerView.setAdapter(movieRecyclerAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
         // RecyclerView pagination - load next page
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -130,6 +163,13 @@ public class MovieListActivity extends AppCompatActivity implements OnMovieListe
             @Override
             public boolean onQueryTextChange(String newText) {
                 return false;
+            }
+        });
+
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isPopular = false;
             }
         });
     }
