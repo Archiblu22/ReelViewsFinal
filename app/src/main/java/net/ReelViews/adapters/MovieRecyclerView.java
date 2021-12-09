@@ -48,11 +48,15 @@ public class MovieRecyclerView  extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int i) {
+        
+
 
         int itemViewType = getItemViewType(i);
         if (itemViewType == DISPLAY_SEARCH) {
             // Vote average is over 10, so dividing by 2 will give us 5 star ratings
             ((MovieViewHolder)holder).ratingBar.setRating((mMovies.get(i).getVote_average())/2);
+
+            ((MovieViewHolder)holder).textView.setText(mMovies.get(i).getTitle());
 
             // ImageView: Glide Library
             Glide.with(holder.itemView.getContext())

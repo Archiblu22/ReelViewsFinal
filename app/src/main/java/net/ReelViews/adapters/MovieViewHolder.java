@@ -9,12 +9,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.ReelViews.R;
+import net.ReelViews.models.MovieModel;
 
 public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
     // Widgets
     ImageView imageView;
     RatingBar ratingBar;
+    TextView textView;
 
     // Click Listener
     OnMovieListener onMovieListener;
@@ -23,6 +25,8 @@ public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnC
         super(itemView);
 
         this.onMovieListener = onMovieListener;
+
+        textView = itemView.findViewById(R.id.movie_tittle);
 
         imageView = itemView.findViewById(R.id.movie_img);
         ratingBar = itemView.findViewById(R.id.rating_bar);

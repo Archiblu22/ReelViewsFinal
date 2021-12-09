@@ -29,6 +29,7 @@ public class MovieDetails extends AppCompatActivity {
         descDetails = findViewById(R.id.textView_desc_details);
         ratingBarDetails = findViewById(R.id.ratingBar_details);
 
+
         GetDataFromIntent();
     }
 
@@ -39,6 +40,7 @@ public class MovieDetails extends AppCompatActivity {
             titleDetails.setText(movieModel.getTitle());
             descDetails.setText(movieModel.getMovie_overview());
             ratingBarDetails.setRating((movieModel.getVote_average())/2);
+
 
             Log.v("Tag","" +movieModel.getMovie_overview());
 
